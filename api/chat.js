@@ -7,7 +7,7 @@ const sendJson = (response, body, status = 200) => {
   response.end(JSON.stringify(body))
 }
 
-module.exports = async (request, response) => {
+export default async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.status(204).setHeader('Access-Control-Allow-Origin', '*')
       .setHeader('Access-Control-Allow-Headers', 'Content-Type')
