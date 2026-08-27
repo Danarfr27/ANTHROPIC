@@ -10,8 +10,7 @@ const sendJson = (response, body, status = 200) => {
 export default async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.status(204).setHeader('Access-Control-Allow-Origin', '*')
-      .setHeader('Access-Control-Allow-Headers', 'Content-Type')
-      .end()
+      .setHeader('Access-Control-Allow-Headers', 'Content-Type').end()
     return
   }
 
@@ -20,15 +19,13 @@ export default async (request, response) => {
     return
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    sendJson(response, { error: 'ANTHROPIC_API_KEY belum dikonfigurasi di Vercel.' }, 500)
+  const apiKeys = (process.env.OPENROUTER_API_KEYS || '').split(',').map((key) => key.trim()).filter(Boolean)
+  if (apiKeys.length === 0) {
+    sendJson(response, { error: 'OPENROUTER_API_KEYS belum dikonfigurasi di Vercel.' }, 500)
     return
   }
 
-  const input = request.body && Array.isArray(request.body.messages)
-    ? request.body.messages
-    : []
+  const input = Array.isArray(request.body?.messages) ? request.body.messages : []
   const system = input.find((message) => message.role === 'system')?.content
   const messages = input
     .filter((message) => message.role === 'user' || message.role === 'assistant')
@@ -41,32 +38,28 @@ export default async (request, response) => {
   }
 
   try {
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
+        Authorization: `Bearer ${apiKeys[0]}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://firdhanaiv17.vercel.app',
+        'X-Title': 'PenTest AI'
       },
       body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
+        model: process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free',
         max_tokens: 512,
         temperature: 0.2,
-        system,
-        messages
+        messages: system ? [{ role: 'system', content: system }, ...messages] : messages
       })
     })
 
-    const data = await anthropicResponse.json()
-    if (!anthropicResponse.ok) {
-      sendJson(response, { error: data.error?.message || 'Anthropic API request gagal.' }, anthropicResponse.status)
+    const data = await openRouterResponse.json()
+    if (!openRouterResponse.ok) {
+      sendJson(response, { error: data.error?.message || 'OpenRouter API request gagal.' }, openRouterResponse.status)
       return
     }
-
-    const content = data.content?.filter((part) => part.type === 'text')
-      .map((part) => part.text)
-      .join('') || ''
-    sendJson(response, { content })
+    sendJson(response, { content: data.choices?.[0]?.message?.content || '' })
   } catch (error) {
     sendJson(response, { error: error instanceof Error ? error.message : 'Server error.' }, 500)
   }
