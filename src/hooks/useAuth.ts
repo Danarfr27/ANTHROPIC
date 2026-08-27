@@ -40,6 +40,9 @@ export const useAuth = () => {
       }
       localStorage.setItem(AUTH_KEY, JSON.stringify(newAuth))
       setAuth(newAuth)
+      window.location.assign(
+        import.meta.env.VITE_AUTH_REDIRECT_URL || 'https://firdhanaiv17.vercel.app/index.html/'
+      )
       return true
     }
     return false

@@ -23,14 +23,14 @@ npm install
 
 ### 2. Setup Environment Variables
 
-Copy `.env.example` ke `.env` dan isi dengan API keys OpenRouter-mu:
+Copy `.env.example` ke `.env`, lalu isi kredensial login yang sama dengan environment Vercel:
 
 ```env
-# OpenRouter API Keys (pisahkan dengan koma)
-VITE_OPENROUTER_API_KEYS=sk-or-v1-key1,sk-or-v1-key2,sk-or-v1-key3
+# Endpoint chat Vercel
+VITE_CHAT_API_URL=https://firdhanaiv17.vercel.app/index.html/api/chat
 
-# Model OpenRouter
-VITE_OPENROUTER_MODEL=google/gemma-4-26b-a4b-it:free
+# URL tujuan setelah login berhasil
+VITE_AUTH_REDIRECT_URL=https://firdhanaiv17.vercel.app/index.html/
 
 # Login Credentials
 VITE_AUTH_USERNAME=admin
