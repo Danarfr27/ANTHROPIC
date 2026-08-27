@@ -36,9 +36,9 @@ VITE_AUTH_REDIRECT_URL=/
 # OpenRouter keys, dipisahkan koma atau baris baru
 OPENROUTER_API_KEYS=sk-or-v1-key1,sk-or-v1-key2
 
-# Buat 100 pasangan: USER01_USER/USER01_PASS sampai USER100_USER/USER100_PASS
-USER01_USER=user-01
-USER01_PASS=password-01
+# Format 100 pasangan wajib: USER01_USER/USER01PASS sampai USER100_USER/USER100PASS
+USER01_USER=hahaha
+USER01PASS=hahaha
 ```
 
 Salin seluruh pasangan `USER01` sampai `USER100` dari `.env.example` dan ganti nilainya. Jangan commit file `.env` atau API key asli.
@@ -61,7 +61,7 @@ Untuk deploy ke Vercel, tambahkan environment variables di dashboard Vercel:
 
 1. Buka project di Vercel Dashboard
 2. Go to **Settings** → **Environment Variables**
-3. Tambahkan `OPENROUTER_API_KEYS`, `OPENROUTER_MODEL`, `APP_URL`, serta 200 variabel login `USER01_USER`/`USER01_PASS` sampai `USER100_USER`/`USER100_PASS`
+3. Tambahkan `OPENROUTER_API_KEYS`, `OPENROUTER_MODEL`, `APP_URL`, serta 200 variabel login `USER01_USER`/`USER01PASS` sampai `USER100_USER`/`USER100PASS`
 
 ## 📁 Struktur Project
 
