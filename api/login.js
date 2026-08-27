@@ -25,7 +25,7 @@ export default (request, response) => {
     const userNumber = String(index).padStart(2, '0')
     if (
       username === process.env[`USER${userNumber}_USER`] &&
-      password === process.env[`USER${userNumber}PASS`]
+      password === process.env[`USER${userNumber}_PASS`]
     ) {
       sendJson(response, { authenticated: true, username })
       return

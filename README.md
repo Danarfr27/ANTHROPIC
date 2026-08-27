@@ -36,9 +36,9 @@ VITE_AUTH_REDIRECT_URL=/
 # OpenRouter keys, dipisahkan koma atau baris baru
 OPENROUTER_API_KEYS=sk-or-v1-key1,sk-or-v1-key2
 
-# Format 100 pasangan wajib: USER01_USER/USER01PASS sampai USER100_USER/USER100PASS
+# Format 100 pasangan wajib: USER01_USER/USER01_PASS sampai USER100_USER/USER100_PASS
 USER01_USER=hahaha
-USER01PASS=hahaha
+USER01_PASS=hahaha
 ```
 
 Salin seluruh pasangan `USER01` sampai `USER100` dari `.env.example` dan ganti nilainya. Jangan commit file `.env` atau API key asli.
