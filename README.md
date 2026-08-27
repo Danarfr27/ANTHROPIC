@@ -23,19 +23,25 @@ npm install
 
 ### 2. Setup Environment Variables
 
-Copy `.env.example` ke `.env`, lalu isi kredensial login yang sama dengan environment Vercel:
+Copy `.env.example` ke `.env`, lalu isi environment variables berikut. Kredensial tanpa prefix `VITE_` hanya dibaca oleh server Vercel:
 
 ```env
-# Endpoint chat Vercel
-VITE_CHAT_API_URL=https://firdhanaiv17.vercel.app/index.html/api/chat
+# API endpoints (same-origin defaults)
+VITE_CHAT_API_URL=/api/chat
+VITE_LOGIN_API_URL=/api/login
 
 # URL tujuan setelah login berhasil
-VITE_AUTH_REDIRECT_URL=https://firdhanaiv17.vercel.app/index.html/
+VITE_AUTH_REDIRECT_URL=/
 
-# Login Credentials
-VITE_AUTH_USERNAME=admin
-VITE_AUTH_PASSWORD=SecureP@ssw0rd2026!
+# OpenRouter keys, dipisahkan koma atau baris baru
+OPENROUTER_API_KEYS=sk-or-v1-key1,sk-or-v1-key2
+
+# Buat 100 pasangan: USER01_USER/USER01_PASS sampai USER100_USER/USER100_PASS
+USER01_USER=user-01
+USER01_PASS=password-01
 ```
+
+Salin seluruh pasangan `USER01` sampai `USER100` dari `.env.example` dan ganti nilainya. Jangan commit file `.env` atau API key asli.
 
 ### 3. Jalankan Development Server
 
@@ -55,7 +61,7 @@ Untuk deploy ke Vercel, tambahkan environment variables di dashboard Vercel:
 
 1. Buka project di Vercel Dashboard
 2. Go to **Settings** → **Environment Variables**
-3. Tambahkan semua variabel dari `.env`
+3. Tambahkan `OPENROUTER_API_KEYS`, `OPENROUTER_MODEL`, `APP_URL`, serta 200 variabel login `USER01_USER`/`USER01_PASS` sampai `USER100_USER`/`USER100_PASS`
 
 ## 📁 Struktur Project
 
@@ -80,6 +86,9 @@ penetration-testing-chatbot/
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
+├── api/
+│   ├── chat.js                # Proxy OpenRouter + API key rotator
+│   └── login.js               # Validasi 100 akun dari environment
 ├── .env.example
 ├── package.json
 ├── vite.config.ts

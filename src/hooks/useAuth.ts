@@ -28,11 +28,14 @@ const getStoredAuth = (): AuthState => {
 export const useAuth = () => {
   const [auth, setAuth] = useState<AuthState>(getStoredAuth)
 
-  const login = useCallback((username: string, password: string): boolean => {
-    const validUsername = import.meta.env.VITE_AUTH_USERNAME || 'admin'
-    const validPassword = import.meta.env.VITE_AUTH_PASSWORD || 'admin123'
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+    const response = await fetch(import.meta.env.VITE_LOGIN_API_URL || '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
 
-    if (username === validUsername && password === validPassword) {
+    if (response.ok) {
       const newAuth: AuthState = {
         isAuthenticated: true,
         username,
@@ -41,7 +44,7 @@ export const useAuth = () => {
       localStorage.setItem(AUTH_KEY, JSON.stringify(newAuth))
       setAuth(newAuth)
       window.location.assign(
-        import.meta.env.VITE_AUTH_REDIRECT_URL || 'https://firdhanaiv17.vercel.app/index.html/'
+        import.meta.env.VITE_AUTH_REDIRECT_URL || '/'
       )
       return true
     }

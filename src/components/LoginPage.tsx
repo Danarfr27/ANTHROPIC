@@ -19,11 +19,16 @@ const LoginPage = () => {
     // Simulate loading
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    const success = login(username, password)
-    if (!success) {
-      setError('Kredensial tidak valid. Silakan coba lagi.')
+    try {
+      const success = await login(username, password)
+      if (!success) {
+        setError('Kredensial tidak valid. Silakan coba lagi.')
+      }
+    } catch {
+      setError('Server login tidak dapat dihubungi. Silakan coba lagi.')
+    } finally {
+      setIsSubmitting(false)
     }
-    setIsSubmitting(false)
   }
 
   return (

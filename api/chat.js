@@ -7,6 +7,39 @@ const sendJson = (response, body, status = 200) => {
   response.end(JSON.stringify(body))
 }
 
+const keysFromEnvironment = () => (process.env.OPENROUTER_API_KEYS || '')
+  .split(/[,\r\n]+/)
+  .map((key) => key.trim())
+  .filter(Boolean)
+
+let keyRotator
+
+const getKeyRotator = () => {
+  const configuredKeys = keysFromEnvironment()
+  const configuredValue = configuredKeys.join(',')
+  if (!keyRotator || keyRotator.configuration !== configuredValue) {
+    keyRotator = {
+      configuration: configuredValue,
+      keys: configuredKeys,
+      currentIndex: 0,
+      exhausted: new Set()
+    }
+  }
+  return keyRotator
+}
+
+const nextKey = (rotator) => {
+  if (rotator.keys.length === 0) return null
+  for (let offset = 0; offset < rotator.keys.length; offset += 1) {
+    const index = (rotator.currentIndex + offset) % rotator.keys.length
+    if (!rotator.exhausted.has(index)) {
+      rotator.currentIndex = index
+      return { key: rotator.keys[index], index }
+    }
+  }
+  return null
+}
+
 export default async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.status(204).setHeader('Access-Control-Allow-Origin', '*')
@@ -19,8 +52,8 @@ export default async (request, response) => {
     return
   }
 
-  const apiKeys = (process.env.OPENROUTER_API_KEYS || '').split(',').map((key) => key.trim()).filter(Boolean)
-  if (apiKeys.length === 0) {
+  const rotator = getKeyRotator()
+  if (rotator.keys.length === 0) {
     sendJson(response, { error: 'OPENROUTER_API_KEYS belum dikonfigurasi di Vercel.' }, 500)
     return
   }
@@ -37,30 +70,46 @@ export default async (request, response) => {
     return
   }
 
-  try {
-    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKeys[0]}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://firdhanaiv17.vercel.app',
-        'X-Title': 'PenTest AI'
-      },
-      body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free',
-        max_tokens: 512,
-        temperature: 0.2,
-        messages: system ? [{ role: 'system', content: system }, ...messages] : messages
-      })
-    })
+  for (let attempt = 0; attempt < rotator.keys.length; attempt += 1) {
+    const selected = nextKey(rotator)
+    if (!selected) break
 
-    const data = await openRouterResponse.json()
-    if (!openRouterResponse.ok) {
-      sendJson(response, { error: data.error?.message || 'OpenRouter API request gagal.' }, openRouterResponse.status)
+    try {
+      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${selected.key}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.APP_URL || 'https://firdhanaiv17.vercel.app',
+          'X-Title': 'PenTest AI'
+        },
+        body: JSON.stringify({
+          model: process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free',
+          max_tokens: 512,
+          temperature: 0.2,
+          messages: system ? [{ role: 'system', content: system }, ...messages] : messages
+        })
+      })
+
+      const data = await openRouterResponse.json()
+      if (openRouterResponse.ok) {
+        rotator.currentIndex = (selected.index + 1) % rotator.keys.length
+        sendJson(response, { content: data.choices?.[0]?.message?.content || '' })
+        return
+      }
+
+      // 401/402/429 indicate an unavailable or exhausted key; try the next one.
+      if (![401, 402, 429].includes(openRouterResponse.status)) {
+        sendJson(response, { error: data.error?.message || 'OpenRouter API request gagal.' }, openRouterResponse.status)
+        return
+      }
+      rotator.exhausted.add(selected.index)
+      rotator.currentIndex = (selected.index + 1) % rotator.keys.length
+    } catch (error) {
+      sendJson(response, { error: error instanceof Error ? error.message : 'Server error.' }, 502)
       return
     }
-    sendJson(response, { content: data.choices?.[0]?.message?.content || '' })
-  } catch (error) {
-    sendJson(response, { error: error instanceof Error ? error.message : 'Server error.' }, 500)
   }
+
+  sendJson(response, { error: 'Semua OpenRouter API key sedang habis atau tidak tersedia.' }, 503)
 }

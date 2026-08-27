@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import { Message } from '../types'
 import { getSystemMessage } from '../utils/persona'
 
-const API_URL = import.meta.env.VITE_CHAT_API_URL || 'https://firdhanaiv17.vercel.app/index.html/api/chat'
+const API_URL = import.meta.env.VITE_CHAT_API_URL || '/api/chat'
 
 const getContent = (data: unknown): string => {
   if (typeof data === 'string') return data
