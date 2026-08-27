@@ -44,8 +44,13 @@ export const useOpenRouter = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'system', content: getSystemMessage() }, ...messages.map(({ role, content }) => ({ role, content }))],
-          stream: true
+          messages: [
+            { role: 'system', content: getSystemMessage() },
+            ...messages.slice(-12).map(({ role, content }) => ({ role, content }))
+          ],
+          stream: true,
+          temperature: 0.2,
+          max_tokens: 512
         }),
         signal: controller.signal
       })
