@@ -7,7 +7,9 @@ const sendJson = (response, body, status = 200) => {
   response.end(JSON.stringify(body))
 }
 
-const keysFromEnvironment = () => (process.env.OPENROUTER_API_KEYS || '')
+const keysFromEnvironment = () => (
+  process.env.OPENROUTER_API_KEYS || process.env.OPENROUTER_API_KEY || ''
+)
   .split(/[,\r\n]+/)
   .map((key) => key.trim())
   .filter(Boolean)

@@ -22,10 +22,9 @@ export default (request, response) => {
   const password = typeof request.body?.password === 'string' ? request.body.password : 'else'
 
   for (let index = 1; index <= 100; index += 1) {
-    const userNumber = String(index).padStart(2, '0')
     if (
-      username === process.env[`USER${userNumber}_USER`] &&
-      password === process.env[`USER${userNumber}_PASS`]
+      username === process.env[`ID${index}`] &&
+      password === process.env[`PW${index}`]
     ) {
       sendJson(response, { authenticated: true, username })
       return

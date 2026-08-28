@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react'
 
 const AUTH_KEY = 'pentest_auth'
 const SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 jam
+const configuredLoginApiUrl = import.meta.env.VITE_LOGIN_API_URL || '/api/login'
+const LOGIN_API_URL = configuredLoginApiUrl.replace('/index.html/api/', '/api/')
 
 interface AuthState {
   isAuthenticated: boolean
@@ -29,7 +31,7 @@ export const useAuth = () => {
   const [auth, setAuth] = useState<AuthState>(getStoredAuth)
 
   const login = useCallback(async (username: string, password: string): Promise<boolean> => {
-    const response = await fetch(import.meta.env.VITE_LOGIN_API_URL || '/api/login', {
+    const response = await fetch(LOGIN_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
