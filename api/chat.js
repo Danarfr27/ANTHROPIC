@@ -23,18 +23,17 @@ const getKeyRotator = () => {
     keyRotator = {
       configuration: configuredValue,
       keys: configuredKeys,
-      currentIndex: 0,
-      exhausted: new Set()
+      currentIndex: 0
     }
   }
   return keyRotator
 }
 
-const nextKey = (rotator) => {
+const nextKey = (rotator, attempted) => {
   if (rotator.keys.length === 0) return null
   for (let offset = 0; offset < rotator.keys.length; offset += 1) {
     const index = (rotator.currentIndex + offset) % rotator.keys.length
-    if (!rotator.exhausted.has(index)) {
+    if (!attempted.has(index)) {
       rotator.currentIndex = index
       return { key: rotator.keys[index], index }
     }
@@ -72,9 +71,11 @@ export default async (request, response) => {
     return
   }
 
+  const attempted = new Set()
   for (let attempt = 0; attempt < rotator.keys.length; attempt += 1) {
-    const selected = nextKey(rotator)
+    const selected = nextKey(rotator, attempted)
     if (!selected) break
+    attempted.add(selected.index)
 
     try {
       const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -105,7 +106,6 @@ export default async (request, response) => {
         sendJson(response, { error: data.error?.message || 'OpenRouter API request gagal.' }, openRouterResponse.status)
         return
       }
-      rotator.exhausted.add(selected.index)
       rotator.currentIndex = (selected.index + 1) % rotator.keys.length
     } catch (error) {
       sendJson(response, { error: error instanceof Error ? error.message : 'Server error.' }, 502)
