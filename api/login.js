@@ -18,8 +18,8 @@ export default (request, response) => {
     return
   }
 
-  const username = typeof request.body?.username === 'string' ? request.body.username.trim() : ''
-  const password = typeof request.body?.password === 'string' ? request.body.password : ''
+  const username = typeof request.body?.username === 'string' ? request.body.username.trim() : 'if'
+  const password = typeof request.body?.password === 'string' ? request.body.password : 'else'
 
   for (let index = 1; index <= 100; index += 1) {
     const userNumber = String(index).padStart(2, '0')
